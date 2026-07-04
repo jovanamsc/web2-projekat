@@ -22,7 +22,7 @@ public class TravelPlanService : ITravelServiceContract
         _shareServiceClient = httpClientFactory.CreateClient("ShareService");
     }
 
-    // Travel Plans
+    // Planovi putovanja
     public async Task<List<TravelPlanDto>> GetAllPlansAsync(int userId)
     {
         var plans = await _context.TravelPlans
@@ -115,7 +115,7 @@ public class TravelPlanService : ITravelServiceContract
         return true;
     }
 
-    // Destinations
+    // Destinacije
     public async Task<List<DestinationDto>> GetDestinationsAsync(int planId)
     {
         var destinations = await _context.Destinations
@@ -189,7 +189,7 @@ public class TravelPlanService : ITravelServiceContract
         return true;
     }
 
-    // Activities
+    // Aktivnosti
     public async Task<List<ActivityDto>> GetActivitiesAsync(int planId)
     {
         var activities = await _context.Activities
@@ -268,7 +268,7 @@ public class TravelPlanService : ITravelServiceContract
         return true;
     }
 
-    // Checklist
+    // Ceklista
     public async Task<List<ChecklistItemDto>> GetChecklistItemsAsync(int planId)
     {
         var items = await _context.ChecklistItems
@@ -321,7 +321,7 @@ public class TravelPlanService : ITravelServiceContract
         return true;
     }
 
-    // Sharing — token management delegated to ShareService (StatefulService)
+    // Dijeljenje
     public async Task<ShareLinkDto> CreateShareLinkAsync(int planId, int userId, CreateShareLinkDto dto)
     {
         var plan = await _context.TravelPlans.FirstOrDefaultAsync(p => p.Id == planId && p.UserId == userId);
@@ -407,6 +407,179 @@ public class TravelPlanService : ITravelServiceContract
             CreatedAt = t.CreatedAt,
             ExpiresAt = t.ExpiresAt
         }).ToList() ?? new List<ShareLinkDto>();
+    }
+
+    public async Task<ShareLinkDto?> ValidateShareTokenAccessAsync(string token, string requiredAccess)
+    {
+        var response = await _shareServiceClient.GetAsync($"api/share-tokens/{token}");
+        if (!response.IsSuccessStatusCode) return null;
+
+        var shareToken = await response.Content.ReadFromJsonAsync<ShareTokenInfo>();
+        if (shareToken == null) return null;
+
+        if (requiredAccess == "EDIT" && shareToken.AccessType != "EDIT") return null;
+
+        return new ShareLinkDto
+        {
+            TravelPlanId = shareToken.TravelPlanId,
+            Token = shareToken.Token,
+            AccessLevel = shareToken.AccessType,
+            CreatedAt = shareToken.CreatedAt,
+            ExpiresAt = shareToken.ExpiresAt
+        };
+    }
+
+    public async Task<TravelPlanDto?> UpdatePlanByTokenAsync(int planId, UpdateTravelPlanDto dto)
+    {
+        var plan = await _context.TravelPlans
+            .Include(p => p.Destinations)
+            .Include(p => p.Activities)
+            .Include(p => p.ChecklistItems)
+            .FirstOrDefaultAsync(p => p.Id == planId);
+        if (plan == null) return null;
+
+        if (dto.Title != null) plan.Title = dto.Title;
+        if (dto.Description != null) plan.Description = dto.Description;
+        if (dto.StartDate.HasValue) plan.StartDate = dto.StartDate.Value;
+        if (dto.EndDate.HasValue) plan.EndDate = dto.EndDate.Value;
+        if (dto.Budget.HasValue)
+        {
+            if (dto.Budget.Value < 0) throw new ArgumentException("Budget cannot be negative.");
+            plan.Budget = dto.Budget.Value;
+        }
+        if (dto.Notes != null) plan.Notes = dto.Notes;
+
+        if (plan.EndDate < plan.StartDate)
+            throw new ArgumentException("End date cannot be before start date.");
+
+        plan.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+        return _mapper.Map<TravelPlanDto>(plan);
+    }
+
+    public async Task<DestinationDto> CreateDestinationByTokenAsync(int planId, CreateDestinationDto dto)
+    {
+        var plan = await _context.TravelPlans.FirstOrDefaultAsync(p => p.Id == planId);
+        if (plan == null) throw new KeyNotFoundException("Travel plan not found.");
+
+        if (dto.DepartureDate < dto.ArrivalDate)
+            throw new ArgumentException("Departure date cannot be before arrival date.");
+
+        var destination = _mapper.Map<Destination>(dto);
+        destination.TravelPlanId = planId;
+        _context.Destinations.Add(destination);
+        plan.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+        return _mapper.Map<DestinationDto>(destination);
+    }
+
+    public async Task<DestinationDto?> UpdateDestinationByTokenAsync(int planId, int id, UpdateDestinationDto dto)
+    {
+        var dest = await _context.Destinations.FirstOrDefaultAsync(d => d.Id == id && d.TravelPlanId == planId);
+        if (dest == null) return null;
+
+        if (dto.Name != null) dest.Name = dto.Name;
+        if (dto.Location != null) dest.Location = dto.Location;
+        if (dto.ArrivalDate.HasValue) dest.ArrivalDate = dto.ArrivalDate.Value;
+        if (dto.DepartureDate.HasValue) dest.DepartureDate = dto.DepartureDate.Value;
+        if (dto.Description != null) dest.Description = dto.Description;
+        if (dto.Notes != null) dest.Notes = dto.Notes;
+
+        if (dest.DepartureDate < dest.ArrivalDate)
+            throw new ArgumentException("Departure date cannot be before arrival date.");
+
+        await _context.SaveChangesAsync();
+        return _mapper.Map<DestinationDto>(dest);
+    }
+
+    public async Task<bool> DeleteDestinationByTokenAsync(int planId, int id)
+    {
+        var dest = await _context.Destinations.FirstOrDefaultAsync(d => d.Id == id && d.TravelPlanId == planId);
+        if (dest == null) return false;
+        _context.Destinations.Remove(dest);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<ActivityDto> CreateActivityByTokenAsync(int planId, CreateActivityDto dto)
+    {
+        if (!ActivityStatus.IsValid(dto.Status))
+            throw new ArgumentException($"Invalid status. Allowed: {string.Join(", ", ActivityStatus.All)}");
+
+        var plan = await _context.TravelPlans.FirstOrDefaultAsync(p => p.Id == planId);
+        if (plan == null) throw new KeyNotFoundException("Travel plan not found.");
+
+        var activity = _mapper.Map<Activity>(dto);
+        activity.TravelPlanId = planId;
+        _context.Activities.Add(activity);
+        plan.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+        return _mapper.Map<ActivityDto>(activity);
+    }
+
+    public async Task<ActivityDto?> UpdateActivityByTokenAsync(int planId, int id, UpdateActivityDto dto)
+    {
+        var activity = await _context.Activities.FirstOrDefaultAsync(a => a.Id == id && a.TravelPlanId == planId);
+        if (activity == null) return null;
+
+        if (dto.Title != null) activity.Title = dto.Title;
+        if (dto.Date.HasValue) activity.Date = dto.Date.Value;
+        if (dto.Time.HasValue) activity.Time = dto.Time.Value;
+        if (dto.Location != null) activity.Location = dto.Location;
+        if (dto.Description != null) activity.Description = dto.Description;
+        if (dto.EstimatedCost.HasValue) activity.EstimatedCost = dto.EstimatedCost.Value;
+        if (dto.Status != null)
+        {
+            if (!ActivityStatus.IsValid(dto.Status))
+                throw new ArgumentException($"Invalid status. Allowed: {string.Join(", ", ActivityStatus.All)}");
+            activity.Status = dto.Status;
+        }
+        if (dto.DestinationId.HasValue) activity.DestinationId = dto.DestinationId;
+
+        await _context.SaveChangesAsync();
+        return _mapper.Map<ActivityDto>(activity);
+    }
+
+    public async Task<bool> DeleteActivityByTokenAsync(int planId, int id)
+    {
+        var activity = await _context.Activities.FirstOrDefaultAsync(a => a.Id == id && a.TravelPlanId == planId);
+        if (activity == null) return false;
+        _context.Activities.Remove(activity);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<ChecklistItemDto> CreateChecklistItemByTokenAsync(int planId, CreateChecklistItemDto dto)
+    {
+        var plan = await _context.TravelPlans.FirstOrDefaultAsync(p => p.Id == planId);
+        if (plan == null) throw new KeyNotFoundException("Travel plan not found.");
+
+        var item = _mapper.Map<ChecklistItem>(dto);
+        item.TravelPlanId = planId;
+        _context.ChecklistItems.Add(item);
+        await _context.SaveChangesAsync();
+        return _mapper.Map<ChecklistItemDto>(item);
+    }
+
+    public async Task<ChecklistItemDto?> UpdateChecklistItemByTokenAsync(int planId, int id, UpdateChecklistItemDto dto)
+    {
+        var item = await _context.ChecklistItems.FirstOrDefaultAsync(c => c.Id == id && c.TravelPlanId == planId);
+        if (item == null) return null;
+
+        if (dto.Title != null) item.Title = dto.Title;
+        if (dto.IsCompleted.HasValue) item.IsCompleted = dto.IsCompleted.Value;
+
+        await _context.SaveChangesAsync();
+        return _mapper.Map<ChecklistItemDto>(item);
+    }
+
+    public async Task<bool> DeleteChecklistItemByTokenAsync(int planId, int id)
+    {
+        var item = await _context.ChecklistItems.FirstOrDefaultAsync(c => c.Id == id && c.TravelPlanId == planId);
+        if (item == null) return false;
+        _context.ChecklistItems.Remove(item);
+        await _context.SaveChangesAsync();
+        return true;
     }
 
     private record ShareTokenResponse(string Token);

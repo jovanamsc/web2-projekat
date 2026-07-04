@@ -4,7 +4,7 @@ namespace TravelPlanner.Common.Interfaces;
 
 public interface ITravelServiceContract
 {
-    // Travel Plans
+    // Planovi putovanja
     Task<List<TravelPlanDto>> GetAllPlansAsync(int userId);
     Task<List<TravelPlanDto>> GetAllPlansAdminAsync();
     Task<TravelPlanDto?> GetPlanByIdAsync(int id, int userId);
@@ -12,30 +12,43 @@ public interface ITravelServiceContract
     Task<TravelPlanDto?> UpdatePlanAsync(int id, int userId, UpdateTravelPlanDto dto);
     Task<bool> DeletePlanAsync(int id, int userId);
 
-    // Destinations
+    // Destinacije
     Task<List<DestinationDto>> GetDestinationsAsync(int planId);
     Task<DestinationDto?> GetDestinationByIdAsync(int planId, int id);
     Task<DestinationDto> CreateDestinationAsync(int planId, int userId, CreateDestinationDto dto);
     Task<DestinationDto?> UpdateDestinationAsync(int planId, int id, int userId, UpdateDestinationDto dto);
     Task<bool> DeleteDestinationAsync(int planId, int id, int userId);
 
-    // Activities
+    // Aktivnosti
     Task<List<ActivityDto>> GetActivitiesAsync(int planId);
     Task<ActivityDto?> GetActivityByIdAsync(int planId, int id);
     Task<ActivityDto> CreateActivityAsync(int planId, int userId, CreateActivityDto dto);
     Task<ActivityDto?> UpdateActivityAsync(int planId, int id, int userId, UpdateActivityDto dto);
     Task<bool> DeleteActivityAsync(int planId, int id, int userId);
 
-    // Checklist
+    // Ceklista
     Task<List<ChecklistItemDto>> GetChecklistItemsAsync(int planId);
     Task<ChecklistItemDto> CreateChecklistItemAsync(int planId, int userId, CreateChecklistItemDto dto);
     Task<ChecklistItemDto?> UpdateChecklistItemAsync(int planId, int id, int userId, UpdateChecklistItemDto dto);
     Task<bool> DeleteChecklistItemAsync(int planId, int id, int userId);
 
-    // Sharing
+    // Dijeljenje
     Task<ShareLinkDto> CreateShareLinkAsync(int planId, int userId, CreateShareLinkDto dto);
     Task<TravelPlanDto?> GetPlanByShareTokenAsync(string token);
     Task<ShareLinkDto?> GetShareLinkInfoAsync(string token);
     Task<bool> DeleteShareLinkAsync(int planId, string token, int userId);
     Task<List<ShareLinkDto>> GetShareLinksAsync(int planId, int userId);
+    Task<ShareLinkDto?> ValidateShareTokenAccessAsync(string token, string requiredAccess);
+
+    // Dijeljenje - shared write
+    Task<TravelPlanDto?> UpdatePlanByTokenAsync(int planId, UpdateTravelPlanDto dto);
+    Task<DestinationDto> CreateDestinationByTokenAsync(int planId, CreateDestinationDto dto);
+    Task<DestinationDto?> UpdateDestinationByTokenAsync(int planId, int id, UpdateDestinationDto dto);
+    Task<bool> DeleteDestinationByTokenAsync(int planId, int id);
+    Task<ActivityDto> CreateActivityByTokenAsync(int planId, CreateActivityDto dto);
+    Task<ActivityDto?> UpdateActivityByTokenAsync(int planId, int id, UpdateActivityDto dto);
+    Task<bool> DeleteActivityByTokenAsync(int planId, int id);
+    Task<ChecklistItemDto> CreateChecklistItemByTokenAsync(int planId, CreateChecklistItemDto dto);
+    Task<ChecklistItemDto?> UpdateChecklistItemByTokenAsync(int planId, int id, UpdateChecklistItemDto dto);
+    Task<bool> DeleteChecklistItemByTokenAsync(int planId, int id);
 }

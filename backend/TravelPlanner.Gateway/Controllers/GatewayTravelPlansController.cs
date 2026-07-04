@@ -17,7 +17,7 @@ public class GatewayTravelPlansController : ProxyControllerBase
         _budgetClient = factory.CreateClient("BudgetService");
     }
 
-    // Travel Plans
+    // Planovi putovanja
     [HttpGet]
     public async Task<IActionResult> GetAll() =>
         await ForwardGet(_travelClient, "api/travel-plans");
@@ -38,7 +38,7 @@ public class GatewayTravelPlansController : ProxyControllerBase
     public async Task<IActionResult> Delete(int id) =>
         await ForwardDelete(_travelClient, $"api/travel-plans/{id}");
 
-    // Destinations
+    // Destinacije
     [HttpGet("{planId}/destinations")]
     public async Task<IActionResult> GetDestinations(int planId) =>
         await ForwardGet(_travelClient, $"api/travel-plans/{planId}/destinations");
@@ -59,7 +59,7 @@ public class GatewayTravelPlansController : ProxyControllerBase
     public async Task<IActionResult> DeleteDestination(int planId, int id) =>
         await ForwardDelete(_travelClient, $"api/travel-plans/{planId}/destinations/{id}");
 
-    // Activities
+    // Aktivnosti
     [HttpGet("{planId}/activities")]
     public async Task<IActionResult> GetActivities(int planId) =>
         await ForwardGet(_travelClient, $"api/travel-plans/{planId}/activities");
@@ -80,7 +80,7 @@ public class GatewayTravelPlansController : ProxyControllerBase
     public async Task<IActionResult> DeleteActivity(int planId, int id) =>
         await ForwardDelete(_travelClient, $"api/travel-plans/{planId}/activities/{id}");
 
-    // Checklist
+    // Ceklista
     [HttpGet("{planId}/checklist")]
     public async Task<IActionResult> GetChecklist(int planId) =>
         await ForwardGet(_travelClient, $"api/travel-plans/{planId}/checklist");
@@ -97,7 +97,7 @@ public class GatewayTravelPlansController : ProxyControllerBase
     public async Task<IActionResult> DeleteChecklistItem(int planId, int id) =>
         await ForwardDelete(_travelClient, $"api/travel-plans/{planId}/checklist/{id}");
 
-    // Sharing
+    // Dijeljenje
     [HttpPost("{planId}/share")]
     public async Task<IActionResult> CreateShareLink(int planId, [FromBody] object body) =>
         await ForwardPost(_travelClient, $"api/travel-plans/{planId}/share", body);
@@ -120,7 +120,7 @@ public class GatewayTravelPlansController : ProxyControllerBase
     public async Task<IActionResult> DeleteShareLink(int planId, int id) =>
         await ForwardDelete(_travelClient, $"api/travel-plans/{planId}/share/{id}");
 
-    // Expenses
+    // Troskovi
     [HttpGet("{planId}/expenses")]
     public async Task<IActionResult> GetExpenses(int planId) =>
         await ForwardGet(_budgetClient, $"api/travel-plans/{planId}/expenses");

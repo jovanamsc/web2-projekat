@@ -80,7 +80,7 @@ public class TravelPlansController : ControllerBase
         return NoContent();
     }
 
-    // Destinations
+    // Destinacije
     [HttpGet("{planId}/destinations")]
     public async Task<ActionResult<List<DestinationDto>>> GetDestinations(int planId)
     {
@@ -140,7 +140,7 @@ public class TravelPlansController : ControllerBase
         return NoContent();
     }
 
-    // Activities
+    // Aktivnosti
     [HttpGet("{planId}/activities")]
     public async Task<ActionResult<List<ActivityDto>>> GetActivities(int planId)
     {
@@ -189,7 +189,7 @@ public class TravelPlansController : ControllerBase
         return NoContent();
     }
 
-    // Checklist
+    // Ceklista
     [HttpGet("{planId}/checklist")]
     public async Task<ActionResult<List<ChecklistItemDto>>> GetChecklist(int planId)
     {
@@ -230,7 +230,7 @@ public class TravelPlansController : ControllerBase
         return NoContent();
     }
 
-    // Sharing
+    // Dijeljenje
     [HttpPost("{planId}/share")]
     public async Task<ActionResult<ShareLinkDto>> CreateShareLink(int planId, [FromBody] CreateShareLinkDto dto)
     {
@@ -246,6 +246,7 @@ public class TravelPlansController : ControllerBase
         }
     }
 
+    // Dijeljeni pristup (VIEW)
     [HttpGet("shared/{token}")]
     [AllowAnonymous]
     public async Task<ActionResult<TravelPlanDto>> GetSharedPlan(string token)
@@ -277,6 +278,138 @@ public class TravelPlansController : ControllerBase
     {
         var userId = GetUserId();
         var result = await _travelService.DeleteShareLinkAsync(planId, token, userId);
+        if (!result) return NotFound();
+        return NoContent();
+    }
+
+    // Dijeljeni pristup (EDIT)
+    [HttpPut("shared/{token}")]
+    [AllowAnonymous]
+    public async Task<ActionResult<TravelPlanDto>> UpdateSharedPlan(string token, [FromBody] UpdateTravelPlanDto dto)
+    {
+        var tokenInfo = await _travelService.ValidateShareTokenAccessAsync(token, "EDIT");
+        if (tokenInfo == null) return Forbid();
+        try
+        {
+            var plan = await _travelService.UpdatePlanByTokenAsync(tokenInfo.TravelPlanId, dto);
+            if (plan == null) return NotFound();
+            return Ok(plan);
+        }
+        catch (ArgumentException ex) { return BadRequest(new { message = ex.Message }); }
+    }
+
+    [HttpPost("shared/{token}/destinations")]
+    [AllowAnonymous]
+    public async Task<ActionResult<DestinationDto>> CreateSharedDestination(string token, [FromBody] CreateDestinationDto dto)
+    {
+        var tokenInfo = await _travelService.ValidateShareTokenAccessAsync(token, "EDIT");
+        if (tokenInfo == null) return Forbid();
+        try
+        {
+            var dest = await _travelService.CreateDestinationByTokenAsync(tokenInfo.TravelPlanId, dto);
+            return Created($"api/travel-plans/shared/{token}/destinations/{dest.Id}", dest);
+        }
+        catch (ArgumentException ex) { return BadRequest(new { message = ex.Message }); }
+    }
+
+    [HttpPut("shared/{token}/destinations/{id}")]
+    [AllowAnonymous]
+    public async Task<ActionResult<DestinationDto>> UpdateSharedDestination(string token, int id, [FromBody] UpdateDestinationDto dto)
+    {
+        var tokenInfo = await _travelService.ValidateShareTokenAccessAsync(token, "EDIT");
+        if (tokenInfo == null) return Forbid();
+        try
+        {
+            var dest = await _travelService.UpdateDestinationByTokenAsync(tokenInfo.TravelPlanId, id, dto);
+            if (dest == null) return NotFound();
+            return Ok(dest);
+        }
+        catch (ArgumentException ex) { return BadRequest(new { message = ex.Message }); }
+    }
+
+    [HttpDelete("shared/{token}/destinations/{id}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> DeleteSharedDestination(string token, int id)
+    {
+        var tokenInfo = await _travelService.ValidateShareTokenAccessAsync(token, "EDIT");
+        if (tokenInfo == null) return Forbid();
+        var result = await _travelService.DeleteDestinationByTokenAsync(tokenInfo.TravelPlanId, id);
+        if (!result) return NotFound();
+        return NoContent();
+    }
+
+    [HttpPost("shared/{token}/activities")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ActivityDto>> CreateSharedActivity(string token, [FromBody] CreateActivityDto dto)
+    {
+        var tokenInfo = await _travelService.ValidateShareTokenAccessAsync(token, "EDIT");
+        if (tokenInfo == null) return Forbid();
+        try
+        {
+            var activity = await _travelService.CreateActivityByTokenAsync(tokenInfo.TravelPlanId, dto);
+            return Created($"api/travel-plans/shared/{token}/activities/{activity.Id}", activity);
+        }
+        catch (ArgumentException ex) { return BadRequest(new { message = ex.Message }); }
+    }
+
+    [HttpPut("shared/{token}/activities/{id}")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ActivityDto>> UpdateSharedActivity(string token, int id, [FromBody] UpdateActivityDto dto)
+    {
+        var tokenInfo = await _travelService.ValidateShareTokenAccessAsync(token, "EDIT");
+        if (tokenInfo == null) return Forbid();
+        try
+        {
+            var activity = await _travelService.UpdateActivityByTokenAsync(tokenInfo.TravelPlanId, id, dto);
+            if (activity == null) return NotFound();
+            return Ok(activity);
+        }
+        catch (ArgumentException ex) { return BadRequest(new { message = ex.Message }); }
+    }
+
+    [HttpDelete("shared/{token}/activities/{id}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> DeleteSharedActivity(string token, int id)
+    {
+        var tokenInfo = await _travelService.ValidateShareTokenAccessAsync(token, "EDIT");
+        if (tokenInfo == null) return Forbid();
+        var result = await _travelService.DeleteActivityByTokenAsync(tokenInfo.TravelPlanId, id);
+        if (!result) return NotFound();
+        return NoContent();
+    }
+
+    [HttpPost("shared/{token}/checklist")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ChecklistItemDto>> CreateSharedChecklistItem(string token, [FromBody] CreateChecklistItemDto dto)
+    {
+        var tokenInfo = await _travelService.ValidateShareTokenAccessAsync(token, "EDIT");
+        if (tokenInfo == null) return Forbid();
+        try
+        {
+            var item = await _travelService.CreateChecklistItemByTokenAsync(tokenInfo.TravelPlanId, dto);
+            return Created($"api/travel-plans/shared/{token}/checklist/{item.Id}", item);
+        }
+        catch (KeyNotFoundException) { return NotFound(); }
+    }
+
+    [HttpPut("shared/{token}/checklist/{id}")]
+    [AllowAnonymous]
+    public async Task<ActionResult<ChecklistItemDto>> UpdateSharedChecklistItem(string token, int id, [FromBody] UpdateChecklistItemDto dto)
+    {
+        var tokenInfo = await _travelService.ValidateShareTokenAccessAsync(token, "EDIT");
+        if (tokenInfo == null) return Forbid();
+        var item = await _travelService.UpdateChecklistItemByTokenAsync(tokenInfo.TravelPlanId, id, dto);
+        if (item == null) return NotFound();
+        return Ok(item);
+    }
+
+    [HttpDelete("shared/{token}/checklist/{id}")]
+    [AllowAnonymous]
+    public async Task<IActionResult> DeleteSharedChecklistItem(string token, int id)
+    {
+        var tokenInfo = await _travelService.ValidateShareTokenAccessAsync(token, "EDIT");
+        if (tokenInfo == null) return Forbid();
+        var result = await _travelService.DeleteChecklistItemByTokenAsync(tokenInfo.TravelPlanId, id);
         if (!result) return NotFound();
         return NoContent();
     }
