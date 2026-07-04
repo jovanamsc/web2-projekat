@@ -37,5 +37,5 @@ public class BudgetSummaryDto
     public decimal PlannedBudget { get; set; }
     public decimal TotalExpenses { get; set; }
     public decimal RemainingBudget { get; set; }
-    public Dictionary<string, decimal> ExpensesByCategory { get; set; } = new();
+    public Dictionary<string, decimal> ExpensesByCategory { get; set; } = new(); // grupisano po kategorijama za prikaz na frontu
 }

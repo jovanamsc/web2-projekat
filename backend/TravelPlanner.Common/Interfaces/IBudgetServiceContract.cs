@@ -11,5 +11,5 @@ public interface IBudgetServiceContract
     Task<bool> DeleteExpenseAsync(int travelPlanId, int id, int userId);
     Task<BudgetSummaryDto> GetBudgetSummaryAsync(int travelPlanId, decimal plannedBudget);
     Task<decimal> GetTotalExpensesAsync(int travelPlanId);
-    Task<bool> DeleteExpensesByPlanIdAsync(int travelPlanId);
+    Task<bool> DeleteExpensesByPlanIdAsync(int travelPlanId); // poziva se kad se obrise cijeli plan
 }

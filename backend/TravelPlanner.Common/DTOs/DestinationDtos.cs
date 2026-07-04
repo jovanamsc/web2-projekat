@@ -17,7 +17,7 @@ public class CreateDestinationDto
     public string Name { get; set; } = string.Empty;
     public string? Location { get; set; }
     public DateTime ArrivalDate { get; set; }
-    public DateTime DepartureDate { get; set; }
+    public DateTime DepartureDate { get; set; } // mora biti poslije ArrivalDate, validira se u servisu
     public string? Description { get; set; }
     public string? Notes { get; set; }
 }

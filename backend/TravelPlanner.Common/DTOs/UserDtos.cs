@@ -30,6 +30,7 @@ public class UserDto
     public DateTime CreatedAt { get; set; }
 }
 
+// nullable polja jer ne moramo sve mijenjati odjednom
 public class UpdateUserDto
 {
     public string? FirstName { get; set; }

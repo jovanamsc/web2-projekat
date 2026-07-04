@@ -36,6 +36,6 @@ public interface ITravelServiceContract
     Task<ShareLinkDto> CreateShareLinkAsync(int planId, int userId, CreateShareLinkDto dto);
     Task<TravelPlanDto?> GetPlanByShareTokenAsync(string token);
     Task<ShareLinkDto?> GetShareLinkInfoAsync(string token);
-    Task<bool> DeleteShareLinkAsync(int planId, int id, int userId);
+    Task<bool> DeleteShareLinkAsync(int planId, string token, int userId);
     Task<List<ShareLinkDto>> GetShareLinksAsync(int planId, int userId);
 }
