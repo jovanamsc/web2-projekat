@@ -15,11 +15,12 @@ export default function Layout({ children }: { children: ReactNode }) {
   return (
     <div className="layout">
       <nav className="navbar">
-        <Link to="/" className="navbar-brand">TravelPlanner</Link>
+        <Link to="/" className="navbar-brand">✈ TravelPlanner</Link>
         <div className="navbar-actions">
           {isAdmin && <Link to="/admin" className="nav-link">Admin</Link>}
           <span className="nav-user">{user?.name}</span>
-          <button className="btn-secondary" onClick={handleLogout}>Odjava</button>
+          <div className="user-avatar">{user?.name?.charAt(0).toUpperCase()}</div>
+          <button className="btn-logout" onClick={handleLogout}>Odjava</button>
         </div>
       </nav>
       <main className="main-content">

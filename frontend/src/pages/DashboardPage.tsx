@@ -42,20 +42,27 @@ export default function DashboardPage() {
 
   return (
     <Layout>
-      <div className="page-header">
-        <h1>Moja putovanja</h1>
-        <button className="btn-primary" style={{ width: 'auto' }} onClick={() => setShowCreate(true)}>
-          + Novo putovanje
-        </button>
+      <div className="dashboard-hero">
+        <div className="dashboard-hero-bg" />
+        <div className="dashboard-hero-overlay" />
+        <div className="dashboard-hero-content">
+          <div>
+            <h1>Moja putovanja</h1>
+            <p>Planiranje koje prati vas na svakom koraku</p>
+          </div>
+          <button className="btn-hero" onClick={() => setShowCreate(true)}>+ Novo putovanje</button>
+        </div>
       </div>
 
       {loading && <p className="text-muted">Ucitavanje...</p>}
 
       {!loading && plans.length === 0 && (
         <div className="empty-state">
-          <p>Nemate planiranih putovanja.</p>
-          <button className="btn-primary" style={{ width: 'auto', marginTop: '12px' }} onClick={() => setShowCreate(true)}>
-            Kreirajte prvo putovanje
+          <div className="empty-state-icon">✈</div>
+          <p>Nema planiranih putovanja</p>
+          <span>Kreirajte prvo putovanje i pocnite planirati.</span>
+          <button className="btn-primary" style={{ width: 'auto' }} onClick={() => setShowCreate(true)}>
+            + Novo putovanje
           </button>
         </div>
       )}
@@ -69,12 +76,10 @@ export default function DashboardPage() {
             </div>
             {plan.description && <p className="plan-description">{plan.description}</p>}
             <div className="plan-meta">
-              <span>{formatDate(plan.startDate)} – {formatDate(plan.endDate)}</span>
-              <span>{getDuration(plan.startDate, plan.endDate)}</span>
-            </div>
-            <div className="plan-meta">
-              {plan.budget > 0 && <span>{plan.budget.toLocaleString('bs-BA')} €</span>}
-              {plan.destinations?.length > 0 && <span>{plan.destinations.length} destinacija</span>}
+              <span className="plan-meta-chip">📅 {formatDate(plan.startDate)} – {formatDate(plan.endDate)}</span>
+              <span className="plan-meta-chip">⏱ {getDuration(plan.startDate, plan.endDate)}</span>
+              {plan.budget > 0 && <span className="plan-meta-chip">💰 {plan.budget.toLocaleString('bs-BA')} €</span>}
+              {plan.destinations?.length > 0 && <span className="plan-meta-chip">📍 {plan.destinations.length} {plan.destinations.length === 1 ? 'destinacija' : 'destinacije'}</span>}
             </div>
           </div>
         ))}

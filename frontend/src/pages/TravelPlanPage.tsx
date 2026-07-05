@@ -47,16 +47,20 @@ export default function TravelPlanPage() {
   return (
     <Layout>
       <div className="plan-detail-header">
-        <div>
-          <button className="btn-back" onClick={() => navigate('/')}>← Nazad</button>
-          <h1>{plan.title}</h1>
-          <p className="plan-dates">
-            {formatDate(plan.startDate)} – {formatDate(plan.endDate)}
-            {plan.budget > 0 && <span> · Budzet: {plan.budget.toLocaleString('bs-BA')} €</span>}
-          </p>
-          {plan.description && <p className="plan-desc">{plan.description}</p>}
+        <div className="plan-header-bg" />
+        <div className="plan-header-overlay" />
+        <div className="plan-header-content">
+          <div>
+            <button className="btn-back" onClick={() => navigate('/')}>← Nazad</button>
+            <h1>{plan.title}</h1>
+            <div className="plan-dates">
+              <span className="plan-dates-chip">📅 {formatDate(plan.startDate)} – {formatDate(plan.endDate)}</span>
+              {plan.budget > 0 && <span className="plan-dates-chip">💰 {plan.budget.toLocaleString('bs-BA')} €</span>}
+            </div>
+            {plan.description && <p className="plan-desc">{plan.description}</p>}
+          </div>
+          <button className="btn-hero" onClick={() => setShowEdit(true)}>Uredi plan</button>
         </div>
-        <button className="btn-secondary" onClick={() => setShowEdit(true)}>Uredi plan</button>
       </div>
 
       <div className="tabs">

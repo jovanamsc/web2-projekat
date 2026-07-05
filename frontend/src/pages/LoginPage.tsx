@@ -41,7 +41,10 @@ export default function LoginPage() {
 
   return (
     <div className="auth-page">
-      <div className="auth-card">
+      <div className="auth-bg" />
+      <div className="auth-overlay" />
+      <div className="auth-card" style={{ position: 'relative', zIndex: 1 }}>
+        <div className="auth-brand">✈ TravelPlanner</div>
         <h1>Prijava</h1>
         <p className="subtitle">Dobrodosli nazad</p>
 
