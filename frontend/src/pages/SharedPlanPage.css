@@ -1,0 +1,147 @@
+.shared-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+.shared-header {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: var(--shadow);
+}
+
+.shared-header-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.shared-header h1 {
+  margin: 6px 0 4px;
+  font-size: 24px;
+}
+
+.plan-dates {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.plan-desc {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.shared-content {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+
+.shared-loading,
+.shared-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  font-size: 16px;
+  color: var(--text-muted);
+}
+
+.shared-error {
+  color: var(--danger);
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.tab-section {
+  padding-top: 16px;
+}
+
+.tab-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.tab-header h2 {
+  font-size: 18px;
+  margin: 0;
+}
+
+.item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.item-card {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+}
+
+.item-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.item-card h3 {
+  font-size: 15px;
+  margin: 0 0 6px;
+}
+
+.item-meta {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.day-group {
+  margin-bottom: 20px;
+}
+
+.day-group-header {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-muted);
+  text-transform: capitalize;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+
+.checklist-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.checklist-item.completed .checklist-title {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
+
+.checklist-title {
+  flex: 1;
+  font-size: 14px;
+}

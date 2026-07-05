@@ -33,6 +33,10 @@ const travelService = {
     await api.delete(`/api/travel-plans/${id}`);
   },
 
+  async deleteUserPlans(userId: number): Promise<void> {
+    await api.delete(`/api/travel-plans/admin/user/${userId}`);
+  },
+
   // Destinacije
   async getDestinations(planId: number): Promise<Destination[]> {
     const response = await api.get<Destination[]>(`/api/travel-plans/${planId}/destinations`);
@@ -116,6 +120,54 @@ const travelService = {
   async getShareLinkInfo(token: string): Promise<ShareLink> {
     const response = await api.get<ShareLink>(`/api/travel-plans/shared/${token}/info`);
     return response.data;
+  },
+
+  // Shared write (EDIT token)
+  async updateSharedPlan(token: string, data: UpdateTravelPlan): Promise<TravelPlan> {
+    const response = await api.put<TravelPlan>(`/api/travel-plans/shared/${token}`, data);
+    return response.data;
+  },
+
+  async createSharedDestination(token: string, data: CreateDestination): Promise<Destination> {
+    const response = await api.post<Destination>(`/api/travel-plans/shared/${token}/destinations`, data);
+    return response.data;
+  },
+
+  async updateSharedDestination(token: string, id: number, data: UpdateDestination): Promise<Destination> {
+    const response = await api.put<Destination>(`/api/travel-plans/shared/${token}/destinations/${id}`, data);
+    return response.data;
+  },
+
+  async deleteSharedDestination(token: string, id: number): Promise<void> {
+    await api.delete(`/api/travel-plans/shared/${token}/destinations/${id}`);
+  },
+
+  async createSharedActivity(token: string, data: CreateActivity): Promise<Activity> {
+    const response = await api.post<Activity>(`/api/travel-plans/shared/${token}/activities`, data);
+    return response.data;
+  },
+
+  async updateSharedActivity(token: string, id: number, data: UpdateActivity): Promise<Activity> {
+    const response = await api.put<Activity>(`/api/travel-plans/shared/${token}/activities/${id}`, data);
+    return response.data;
+  },
+
+  async deleteSharedActivity(token: string, id: number): Promise<void> {
+    await api.delete(`/api/travel-plans/shared/${token}/activities/${id}`);
+  },
+
+  async createSharedChecklistItem(token: string, data: CreateChecklistItem): Promise<ChecklistItem> {
+    const response = await api.post<ChecklistItem>(`/api/travel-plans/shared/${token}/checklist`, data);
+    return response.data;
+  },
+
+  async updateSharedChecklistItem(token: string, id: number, data: UpdateChecklistItem): Promise<ChecklistItem> {
+    const response = await api.put<ChecklistItem>(`/api/travel-plans/shared/${token}/checklist/${id}`, data);
+    return response.data;
+  },
+
+  async deleteSharedChecklistItem(token: string, id: number): Promise<void> {
+    await api.delete(`/api/travel-plans/shared/${token}/checklist/${id}`);
   },
 };
 
