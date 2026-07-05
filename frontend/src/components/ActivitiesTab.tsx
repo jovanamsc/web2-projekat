@@ -219,7 +219,7 @@ function ActivityForm({ initial, onSubmit, onCancel }: {
     try {
       await onSubmit({
         title, date, status,
-        time: time || undefined,
+        time: time ? `${time}:00` : undefined,
         location: location || undefined,
         description: description || undefined,
         estimatedCost: estimatedCost !== '' ? Number(estimatedCost) : undefined,

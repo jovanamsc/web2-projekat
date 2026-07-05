@@ -311,7 +311,7 @@ function SimpleActivityForm({ onSubmit, onCancel }: { onSubmit: (d: CreateActivi
     e.preventDefault();
     if (!title.trim() || !date) { setError('Naziv i datum su obavezni.'); return; }
     setLoading(true);
-    try { await onSubmit({ title, date, status: 'Planned', time: time || undefined, location: location || undefined }); }
+    try { await onSubmit({ title, date, status: 'Planned', time: time ? `${time}:00` : undefined, location: location || undefined }); }
     catch { setError('Greska.'); }
     finally { setLoading(false); }
   };
