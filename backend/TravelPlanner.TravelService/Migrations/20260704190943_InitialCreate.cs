@@ -110,7 +110,7 @@ namespace TravelPlanner.TravelService.Migrations
                         column: x => x.TravelPlanId,
                         principalTable: "TravelPlans",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.NoAction);
                 });
 
             migrationBuilder.CreateIndex(

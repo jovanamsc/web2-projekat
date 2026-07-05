@@ -28,7 +28,7 @@ public class TravelDbContext : DbContext
             entity.HasMany(e => e.Activities)
                 .WithOne(a => a.TravelPlan)
                 .HasForeignKey(a => a.TravelPlanId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
 
             entity.HasMany(e => e.ChecklistItems)
                 .WithOne(c => c.TravelPlan)

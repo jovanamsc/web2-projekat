@@ -211,7 +211,7 @@ namespace TravelPlanner.TravelService.Migrations
                     b.HasOne("TravelPlanner.TravelService.Models.TravelPlan", "TravelPlan")
                         .WithMany("Activities")
                         .HasForeignKey("TravelPlanId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Destination");

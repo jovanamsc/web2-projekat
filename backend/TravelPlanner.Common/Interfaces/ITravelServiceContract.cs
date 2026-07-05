@@ -7,30 +7,31 @@ public interface ITravelServiceContract
     // Planovi putovanja
     Task<List<TravelPlanDto>> GetAllPlansAsync(int userId);
     Task<List<TravelPlanDto>> GetAllPlansAdminAsync();
-    Task<TravelPlanDto?> GetPlanByIdAsync(int id, int userId);
+    Task<TravelPlanDto?> GetPlanByIdAsync(int id, int userId, bool isAdmin = false);
     Task<TravelPlanDto> CreatePlanAsync(int userId, CreateTravelPlanDto dto);
-    Task<TravelPlanDto?> UpdatePlanAsync(int id, int userId, UpdateTravelPlanDto dto);
-    Task<bool> DeletePlanAsync(int id, int userId);
+    Task<TravelPlanDto?> UpdatePlanAsync(int id, int userId, UpdateTravelPlanDto dto, bool isAdmin = false);
+    Task<bool> DeletePlanAsync(int id, int userId, bool isAdmin = false);
+    Task<bool> DeleteUserPlansAsync(int userId);
 
     // Destinacije
     Task<List<DestinationDto>> GetDestinationsAsync(int planId);
     Task<DestinationDto?> GetDestinationByIdAsync(int planId, int id);
-    Task<DestinationDto> CreateDestinationAsync(int planId, int userId, CreateDestinationDto dto);
-    Task<DestinationDto?> UpdateDestinationAsync(int planId, int id, int userId, UpdateDestinationDto dto);
-    Task<bool> DeleteDestinationAsync(int planId, int id, int userId);
+    Task<DestinationDto> CreateDestinationAsync(int planId, int userId, CreateDestinationDto dto, bool isAdmin = false);
+    Task<DestinationDto?> UpdateDestinationAsync(int planId, int id, int userId, UpdateDestinationDto dto, bool isAdmin = false);
+    Task<bool> DeleteDestinationAsync(int planId, int id, int userId, bool isAdmin = false);
 
     // Aktivnosti
     Task<List<ActivityDto>> GetActivitiesAsync(int planId);
     Task<ActivityDto?> GetActivityByIdAsync(int planId, int id);
-    Task<ActivityDto> CreateActivityAsync(int planId, int userId, CreateActivityDto dto);
-    Task<ActivityDto?> UpdateActivityAsync(int planId, int id, int userId, UpdateActivityDto dto);
-    Task<bool> DeleteActivityAsync(int planId, int id, int userId);
+    Task<ActivityDto> CreateActivityAsync(int planId, int userId, CreateActivityDto dto, bool isAdmin = false);
+    Task<ActivityDto?> UpdateActivityAsync(int planId, int id, int userId, UpdateActivityDto dto, bool isAdmin = false);
+    Task<bool> DeleteActivityAsync(int planId, int id, int userId, bool isAdmin = false);
 
     // Ceklista
     Task<List<ChecklistItemDto>> GetChecklistItemsAsync(int planId);
-    Task<ChecklistItemDto> CreateChecklistItemAsync(int planId, int userId, CreateChecklistItemDto dto);
-    Task<ChecklistItemDto?> UpdateChecklistItemAsync(int planId, int id, int userId, UpdateChecklistItemDto dto);
-    Task<bool> DeleteChecklistItemAsync(int planId, int id, int userId);
+    Task<ChecklistItemDto> CreateChecklistItemAsync(int planId, int userId, CreateChecklistItemDto dto, bool isAdmin = false);
+    Task<ChecklistItemDto?> UpdateChecklistItemAsync(int planId, int id, int userId, UpdateChecklistItemDto dto, bool isAdmin = false);
+    Task<bool> DeleteChecklistItemAsync(int planId, int id, int userId, bool isAdmin = false);
 
     // Dijeljenje
     Task<ShareLinkDto> CreateShareLinkAsync(int planId, int userId, CreateShareLinkDto dto);

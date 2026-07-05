@@ -35,7 +35,8 @@ public class TravelPlansController : ControllerBase
     public async Task<ActionResult<TravelPlanDto>> GetById(int id)
     {
         var userId = GetUserId();
-        var plan = await _travelService.GetPlanByIdAsync(id, userId);
+        var isAdmin = GetUserRole() == "Admin";
+        var plan = await _travelService.GetPlanByIdAsync(id, userId, isAdmin);
         if (plan == null) return NotFound();
         return Ok(plan);
     }
@@ -61,7 +62,8 @@ public class TravelPlansController : ControllerBase
         try
         {
             var userId = GetUserId();
-            var plan = await _travelService.UpdatePlanAsync(id, userId, dto);
+            var isAdmin = GetUserRole() == "Admin";
+            var plan = await _travelService.UpdatePlanAsync(id, userId, dto, isAdmin);
             if (plan == null) return NotFound();
             return Ok(plan);
         }
@@ -75,8 +77,17 @@ public class TravelPlansController : ControllerBase
     public async Task<IActionResult> Delete(int id)
     {
         var userId = GetUserId();
-        var result = await _travelService.DeletePlanAsync(id, userId);
+        var isAdmin = GetUserRole() == "Admin";
+        var result = await _travelService.DeletePlanAsync(id, userId, isAdmin);
         if (!result) return NotFound();
+        return NoContent();
+    }
+
+    [HttpDelete("admin/user/{userId}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> DeleteUserPlans(int userId)
+    {
+        await _travelService.DeleteUserPlansAsync(userId);
         return NoContent();
     }
 
@@ -102,7 +113,7 @@ public class TravelPlansController : ControllerBase
         try
         {
             var userId = GetUserId();
-            var dest = await _travelService.CreateDestinationAsync(planId, userId, dto);
+            var dest = await _travelService.CreateDestinationAsync(planId, userId, dto, GetUserRole() == "Admin");
             return CreatedAtAction(nameof(GetDestination), new { planId, id = dest.Id }, dest);
         }
         catch (KeyNotFoundException)
@@ -121,7 +132,7 @@ public class TravelPlansController : ControllerBase
         try
         {
             var userId = GetUserId();
-            var dest = await _travelService.UpdateDestinationAsync(planId, id, userId, dto);
+            var dest = await _travelService.UpdateDestinationAsync(planId, id, userId, dto, GetUserRole() == "Admin");
             if (dest == null) return NotFound();
             return Ok(dest);
         }
@@ -135,7 +146,7 @@ public class TravelPlansController : ControllerBase
     public async Task<IActionResult> DeleteDestination(int planId, int id)
     {
         var userId = GetUserId();
-        var result = await _travelService.DeleteDestinationAsync(planId, id, userId);
+        var result = await _travelService.DeleteDestinationAsync(planId, id, userId, GetUserRole() == "Admin");
         if (!result) return NotFound();
         return NoContent();
     }
@@ -162,7 +173,7 @@ public class TravelPlansController : ControllerBase
         try
         {
             var userId = GetUserId();
-            var activity = await _travelService.CreateActivityAsync(planId, userId, dto);
+            var activity = await _travelService.CreateActivityAsync(planId, userId, dto, GetUserRole() == "Admin");
             return CreatedAtAction(nameof(GetActivity), new { planId, id = activity.Id }, activity);
         }
         catch (KeyNotFoundException)
@@ -175,7 +186,7 @@ public class TravelPlansController : ControllerBase
     public async Task<ActionResult<ActivityDto>> UpdateActivity(int planId, int id, [FromBody] UpdateActivityDto dto)
     {
         var userId = GetUserId();
-        var activity = await _travelService.UpdateActivityAsync(planId, id, userId, dto);
+        var activity = await _travelService.UpdateActivityAsync(planId, id, userId, dto, GetUserRole() == "Admin");
         if (activity == null) return NotFound();
         return Ok(activity);
     }
@@ -184,7 +195,7 @@ public class TravelPlansController : ControllerBase
     public async Task<IActionResult> DeleteActivity(int planId, int id)
     {
         var userId = GetUserId();
-        var result = await _travelService.DeleteActivityAsync(planId, id, userId);
+        var result = await _travelService.DeleteActivityAsync(planId, id, userId, GetUserRole() == "Admin");
         if (!result) return NotFound();
         return NoContent();
     }
@@ -203,7 +214,7 @@ public class TravelPlansController : ControllerBase
         try
         {
             var userId = GetUserId();
-            var item = await _travelService.CreateChecklistItemAsync(planId, userId, dto);
+            var item = await _travelService.CreateChecklistItemAsync(planId, userId, dto, GetUserRole() == "Admin");
             return Created($"api/travel-plans/{planId}/checklist/{item.Id}", item);
         }
         catch (KeyNotFoundException)
@@ -216,7 +227,7 @@ public class TravelPlansController : ControllerBase
     public async Task<ActionResult<ChecklistItemDto>> UpdateChecklistItem(int planId, int id, [FromBody] UpdateChecklistItemDto dto)
     {
         var userId = GetUserId();
-        var item = await _travelService.UpdateChecklistItemAsync(planId, id, userId, dto);
+        var item = await _travelService.UpdateChecklistItemAsync(planId, id, userId, dto, GetUserRole() == "Admin");
         if (item == null) return NotFound();
         return Ok(item);
     }
@@ -225,7 +236,7 @@ public class TravelPlansController : ControllerBase
     public async Task<IActionResult> DeleteChecklistItem(int planId, int id)
     {
         var userId = GetUserId();
-        var result = await _travelService.DeleteChecklistItemAsync(planId, id, userId);
+        var result = await _travelService.DeleteChecklistItemAsync(planId, id, userId, GetUserRole() == "Admin");
         if (!result) return NotFound();
         return NoContent();
     }
@@ -284,7 +295,7 @@ public class TravelPlansController : ControllerBase
 
     // Dijeljeni pristup (EDIT)
     [HttpPut("shared/{token}")]
-    [AllowAnonymous]
+    [Authorize]
     public async Task<ActionResult<TravelPlanDto>> UpdateSharedPlan(string token, [FromBody] UpdateTravelPlanDto dto)
     {
         var tokenInfo = await _travelService.ValidateShareTokenAccessAsync(token, "EDIT");
@@ -299,7 +310,7 @@ public class TravelPlansController : ControllerBase
     }
 
     [HttpPost("shared/{token}/destinations")]
-    [AllowAnonymous]
+    [Authorize]
     public async Task<ActionResult<DestinationDto>> CreateSharedDestination(string token, [FromBody] CreateDestinationDto dto)
     {
         var tokenInfo = await _travelService.ValidateShareTokenAccessAsync(token, "EDIT");
@@ -313,7 +324,7 @@ public class TravelPlansController : ControllerBase
     }
 
     [HttpPut("shared/{token}/destinations/{id}")]
-    [AllowAnonymous]
+    [Authorize]
     public async Task<ActionResult<DestinationDto>> UpdateSharedDestination(string token, int id, [FromBody] UpdateDestinationDto dto)
     {
         var tokenInfo = await _travelService.ValidateShareTokenAccessAsync(token, "EDIT");
@@ -328,7 +339,7 @@ public class TravelPlansController : ControllerBase
     }
 
     [HttpDelete("shared/{token}/destinations/{id}")]
-    [AllowAnonymous]
+    [Authorize]
     public async Task<IActionResult> DeleteSharedDestination(string token, int id)
     {
         var tokenInfo = await _travelService.ValidateShareTokenAccessAsync(token, "EDIT");
@@ -339,7 +350,7 @@ public class TravelPlansController : ControllerBase
     }
 
     [HttpPost("shared/{token}/activities")]
-    [AllowAnonymous]
+    [Authorize]
     public async Task<ActionResult<ActivityDto>> CreateSharedActivity(string token, [FromBody] CreateActivityDto dto)
     {
         var tokenInfo = await _travelService.ValidateShareTokenAccessAsync(token, "EDIT");
@@ -353,7 +364,7 @@ public class TravelPlansController : ControllerBase
     }
 
     [HttpPut("shared/{token}/activities/{id}")]
-    [AllowAnonymous]
+    [Authorize]
     public async Task<ActionResult<ActivityDto>> UpdateSharedActivity(string token, int id, [FromBody] UpdateActivityDto dto)
     {
         var tokenInfo = await _travelService.ValidateShareTokenAccessAsync(token, "EDIT");
@@ -368,7 +379,7 @@ public class TravelPlansController : ControllerBase
     }
 
     [HttpDelete("shared/{token}/activities/{id}")]
-    [AllowAnonymous]
+    [Authorize]
     public async Task<IActionResult> DeleteSharedActivity(string token, int id)
     {
         var tokenInfo = await _travelService.ValidateShareTokenAccessAsync(token, "EDIT");
@@ -379,7 +390,7 @@ public class TravelPlansController : ControllerBase
     }
 
     [HttpPost("shared/{token}/checklist")]
-    [AllowAnonymous]
+    [Authorize]
     public async Task<ActionResult<ChecklistItemDto>> CreateSharedChecklistItem(string token, [FromBody] CreateChecklistItemDto dto)
     {
         var tokenInfo = await _travelService.ValidateShareTokenAccessAsync(token, "EDIT");
@@ -393,7 +404,7 @@ public class TravelPlansController : ControllerBase
     }
 
     [HttpPut("shared/{token}/checklist/{id}")]
-    [AllowAnonymous]
+    [Authorize]
     public async Task<ActionResult<ChecklistItemDto>> UpdateSharedChecklistItem(string token, int id, [FromBody] UpdateChecklistItemDto dto)
     {
         var tokenInfo = await _travelService.ValidateShareTokenAccessAsync(token, "EDIT");
@@ -404,7 +415,7 @@ public class TravelPlansController : ControllerBase
     }
 
     [HttpDelete("shared/{token}/checklist/{id}")]
-    [AllowAnonymous]
+    [Authorize]
     public async Task<IActionResult> DeleteSharedChecklistItem(string token, int id)
     {
         var tokenInfo = await _travelService.ValidateShareTokenAccessAsync(token, "EDIT");

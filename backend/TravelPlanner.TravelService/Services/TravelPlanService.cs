@@ -48,13 +48,13 @@ public class TravelPlanService : ITravelServiceContract
         return _mapper.Map<List<TravelPlanDto>>(plans);
     }
 
-    public async Task<TravelPlanDto?> GetPlanByIdAsync(int id, int userId)
+    public async Task<TravelPlanDto?> GetPlanByIdAsync(int id, int userId, bool isAdmin = false)
     {
         var plan = await _context.TravelPlans
             .Include(p => p.Destinations)
             .Include(p => p.Activities)
             .Include(p => p.ChecklistItems)
-            .FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
+            .FirstOrDefaultAsync(p => p.Id == id && (isAdmin || p.UserId == userId));
 
         return plan == null ? null : _mapper.Map<TravelPlanDto>(plan);
     }
@@ -75,13 +75,13 @@ public class TravelPlanService : ITravelServiceContract
         return _mapper.Map<TravelPlanDto>(plan);
     }
 
-    public async Task<TravelPlanDto?> UpdatePlanAsync(int id, int userId, UpdateTravelPlanDto dto)
+    public async Task<TravelPlanDto?> UpdatePlanAsync(int id, int userId, UpdateTravelPlanDto dto, bool isAdmin = false)
     {
         var plan = await _context.TravelPlans
             .Include(p => p.Destinations)
             .Include(p => p.Activities)
             .Include(p => p.ChecklistItems)
-            .FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
+            .FirstOrDefaultAsync(p => p.Id == id && (isAdmin || p.UserId == userId));
 
         if (plan == null) return null;
 
@@ -105,12 +105,28 @@ public class TravelPlanService : ITravelServiceContract
         return _mapper.Map<TravelPlanDto>(plan);
     }
 
-    public async Task<bool> DeletePlanAsync(int id, int userId)
+    public async Task<bool> DeletePlanAsync(int id, int userId, bool isAdmin = false)
     {
-        var plan = await _context.TravelPlans.FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId);
+        var plan = await _context.TravelPlans.FirstOrDefaultAsync(p => p.Id == id && (isAdmin || p.UserId == userId));
         if (plan == null) return false;
 
+        var activities = await _context.Activities.Where(a => a.TravelPlanId == id).ToListAsync();
+        _context.Activities.RemoveRange(activities);
+
         _context.TravelPlans.Remove(plan);
+        await _context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> DeleteUserPlansAsync(int userId)
+    {
+        var plans = await _context.TravelPlans.Where(p => p.UserId == userId).ToListAsync();
+        if (!plans.Any()) return true;
+
+        var planIds = plans.Select(p => p.Id).ToList();
+        var activities = await _context.Activities.Where(a => planIds.Contains(a.TravelPlanId)).ToListAsync();
+        _context.Activities.RemoveRange(activities);
+        _context.TravelPlans.RemoveRange(plans);
         await _context.SaveChangesAsync();
         return true;
     }
@@ -133,9 +149,9 @@ public class TravelPlanService : ITravelServiceContract
         return dest == null ? null : _mapper.Map<DestinationDto>(dest);
     }
 
-    public async Task<DestinationDto> CreateDestinationAsync(int planId, int userId, CreateDestinationDto dto)
+    public async Task<DestinationDto> CreateDestinationAsync(int planId, int userId, CreateDestinationDto dto, bool isAdmin = false)
     {
-        var plan = await _context.TravelPlans.FirstOrDefaultAsync(p => p.Id == planId && p.UserId == userId);
+        var plan = await _context.TravelPlans.FirstOrDefaultAsync(p => p.Id == planId && (isAdmin || p.UserId == userId));
         if (plan == null) throw new KeyNotFoundException("Travel plan not found.");
 
         if (dto.DepartureDate < dto.ArrivalDate)
@@ -151,9 +167,9 @@ public class TravelPlanService : ITravelServiceContract
         return _mapper.Map<DestinationDto>(destination);
     }
 
-    public async Task<DestinationDto?> UpdateDestinationAsync(int planId, int id, int userId, UpdateDestinationDto dto)
+    public async Task<DestinationDto?> UpdateDestinationAsync(int planId, int id, int userId, UpdateDestinationDto dto, bool isAdmin = false)
     {
-        var plan = await _context.TravelPlans.FirstOrDefaultAsync(p => p.Id == planId && p.UserId == userId);
+        var plan = await _context.TravelPlans.FirstOrDefaultAsync(p => p.Id == planId && (isAdmin || p.UserId == userId));
         if (plan == null) return null;
 
         var dest = await _context.Destinations.FirstOrDefaultAsync(d => d.Id == id && d.TravelPlanId == planId);
@@ -175,9 +191,9 @@ public class TravelPlanService : ITravelServiceContract
         return _mapper.Map<DestinationDto>(dest);
     }
 
-    public async Task<bool> DeleteDestinationAsync(int planId, int id, int userId)
+    public async Task<bool> DeleteDestinationAsync(int planId, int id, int userId, bool isAdmin = false)
     {
-        var plan = await _context.TravelPlans.FirstOrDefaultAsync(p => p.Id == planId && p.UserId == userId);
+        var plan = await _context.TravelPlans.FirstOrDefaultAsync(p => p.Id == planId && (isAdmin || p.UserId == userId));
         if (plan == null) return false;
 
         var dest = await _context.Destinations.FirstOrDefaultAsync(d => d.Id == id && d.TravelPlanId == planId);
@@ -208,12 +224,12 @@ public class TravelPlanService : ITravelServiceContract
         return activity == null ? null : _mapper.Map<ActivityDto>(activity);
     }
 
-    public async Task<ActivityDto> CreateActivityAsync(int planId, int userId, CreateActivityDto dto)
+    public async Task<ActivityDto> CreateActivityAsync(int planId, int userId, CreateActivityDto dto, bool isAdmin = false)
     {
         if (!ActivityStatus.IsValid(dto.Status))
             throw new ArgumentException($"Invalid status. Allowed: {string.Join(", ", ActivityStatus.All)}");
 
-        var plan = await _context.TravelPlans.FirstOrDefaultAsync(p => p.Id == planId && p.UserId == userId);
+        var plan = await _context.TravelPlans.FirstOrDefaultAsync(p => p.Id == planId && (isAdmin || p.UserId == userId));
         if (plan == null) throw new KeyNotFoundException("Travel plan not found.");
 
         var activity = _mapper.Map<Activity>(dto);
@@ -226,9 +242,9 @@ public class TravelPlanService : ITravelServiceContract
         return _mapper.Map<ActivityDto>(activity);
     }
 
-    public async Task<ActivityDto?> UpdateActivityAsync(int planId, int id, int userId, UpdateActivityDto dto)
+    public async Task<ActivityDto?> UpdateActivityAsync(int planId, int id, int userId, UpdateActivityDto dto, bool isAdmin = false)
     {
-        var plan = await _context.TravelPlans.FirstOrDefaultAsync(p => p.Id == planId && p.UserId == userId);
+        var plan = await _context.TravelPlans.FirstOrDefaultAsync(p => p.Id == planId && (isAdmin || p.UserId == userId));
         if (plan == null) return null;
 
         var activity = await _context.Activities.FirstOrDefaultAsync(a => a.Id == id && a.TravelPlanId == planId);
@@ -254,9 +270,9 @@ public class TravelPlanService : ITravelServiceContract
         return _mapper.Map<ActivityDto>(activity);
     }
 
-    public async Task<bool> DeleteActivityAsync(int planId, int id, int userId)
+    public async Task<bool> DeleteActivityAsync(int planId, int id, int userId, bool isAdmin = false)
     {
-        var plan = await _context.TravelPlans.FirstOrDefaultAsync(p => p.Id == planId && p.UserId == userId);
+        var plan = await _context.TravelPlans.FirstOrDefaultAsync(p => p.Id == planId && (isAdmin || p.UserId == userId));
         if (plan == null) return false;
 
         var activity = await _context.Activities.FirstOrDefaultAsync(a => a.Id == id && a.TravelPlanId == planId);
@@ -279,9 +295,9 @@ public class TravelPlanService : ITravelServiceContract
         return _mapper.Map<List<ChecklistItemDto>>(items);
     }
 
-    public async Task<ChecklistItemDto> CreateChecklistItemAsync(int planId, int userId, CreateChecklistItemDto dto)
+    public async Task<ChecklistItemDto> CreateChecklistItemAsync(int planId, int userId, CreateChecklistItemDto dto, bool isAdmin = false)
     {
-        var plan = await _context.TravelPlans.FirstOrDefaultAsync(p => p.Id == planId && p.UserId == userId);
+        var plan = await _context.TravelPlans.FirstOrDefaultAsync(p => p.Id == planId && (isAdmin || p.UserId == userId));
         if (plan == null) throw new KeyNotFoundException("Travel plan not found.");
 
         var item = _mapper.Map<ChecklistItem>(dto);
@@ -293,9 +309,9 @@ public class TravelPlanService : ITravelServiceContract
         return _mapper.Map<ChecklistItemDto>(item);
     }
 
-    public async Task<ChecklistItemDto?> UpdateChecklistItemAsync(int planId, int id, int userId, UpdateChecklistItemDto dto)
+    public async Task<ChecklistItemDto?> UpdateChecklistItemAsync(int planId, int id, int userId, UpdateChecklistItemDto dto, bool isAdmin = false)
     {
-        var plan = await _context.TravelPlans.FirstOrDefaultAsync(p => p.Id == planId && p.UserId == userId);
+        var plan = await _context.TravelPlans.FirstOrDefaultAsync(p => p.Id == planId && (isAdmin || p.UserId == userId));
         if (plan == null) return null;
 
         var item = await _context.ChecklistItems.FirstOrDefaultAsync(c => c.Id == id && c.TravelPlanId == planId);
@@ -308,9 +324,9 @@ public class TravelPlanService : ITravelServiceContract
         return _mapper.Map<ChecklistItemDto>(item);
     }
 
-    public async Task<bool> DeleteChecklistItemAsync(int planId, int id, int userId)
+    public async Task<bool> DeleteChecklistItemAsync(int planId, int id, int userId, bool isAdmin = false)
     {
-        var plan = await _context.TravelPlans.FirstOrDefaultAsync(p => p.Id == planId && p.UserId == userId);
+        var plan = await _context.TravelPlans.FirstOrDefaultAsync(p => p.Id == planId && (isAdmin || p.UserId == userId));
         if (plan == null) return false;
 
         var item = await _context.ChecklistItems.FirstOrDefaultAsync(c => c.Id == id && c.TravelPlanId == planId);

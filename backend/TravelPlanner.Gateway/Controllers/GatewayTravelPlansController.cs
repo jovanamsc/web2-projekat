@@ -38,6 +38,11 @@ public class GatewayTravelPlansController : ProxyControllerBase
     public async Task<IActionResult> Delete(int id) =>
         await ForwardDelete(_travelClient, $"api/travel-plans/{id}");
 
+    [HttpDelete("admin/user/{userId}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> DeleteUserPlans(int userId) =>
+        await ForwardDelete(_travelClient, $"api/travel-plans/admin/user/{userId}");
+
     // Destinacije
     [HttpGet("{planId}/destinations")]
     public async Task<IActionResult> GetDestinations(int planId) =>
@@ -116,9 +121,50 @@ public class GatewayTravelPlansController : ProxyControllerBase
     public async Task<IActionResult> GetShareLinks(int planId) =>
         await ForwardGet(_travelClient, $"api/travel-plans/{planId}/share");
 
-    [HttpDelete("{planId}/share/{id}")]
-    public async Task<IActionResult> DeleteShareLink(int planId, int id) =>
-        await ForwardDelete(_travelClient, $"api/travel-plans/{planId}/share/{id}");
+    [HttpDelete("{planId}/share/{token}")]
+    public async Task<IActionResult> DeleteShareLink(int planId, string token) =>
+        await ForwardDelete(_travelClient, $"api/travel-plans/{planId}/share/{token}");
+
+    // Dijeljeni pristup (EDIT)
+    [HttpPut("shared/{token}")]
+    public async Task<IActionResult> UpdateSharedPlan(string token, [FromBody] object body) =>
+        await ForwardPut(_travelClient, $"api/travel-plans/shared/{token}", body);
+
+    [HttpPost("shared/{token}/destinations")]
+    public async Task<IActionResult> CreateSharedDestination(string token, [FromBody] object body) =>
+        await ForwardPost(_travelClient, $"api/travel-plans/shared/{token}/destinations", body);
+
+    [HttpPut("shared/{token}/destinations/{id}")]
+    public async Task<IActionResult> UpdateSharedDestination(string token, int id, [FromBody] object body) =>
+        await ForwardPut(_travelClient, $"api/travel-plans/shared/{token}/destinations/{id}", body);
+
+    [HttpDelete("shared/{token}/destinations/{id}")]
+    public async Task<IActionResult> DeleteSharedDestination(string token, int id) =>
+        await ForwardDelete(_travelClient, $"api/travel-plans/shared/{token}/destinations/{id}");
+
+    [HttpPost("shared/{token}/activities")]
+    public async Task<IActionResult> CreateSharedActivity(string token, [FromBody] object body) =>
+        await ForwardPost(_travelClient, $"api/travel-plans/shared/{token}/activities", body);
+
+    [HttpPut("shared/{token}/activities/{id}")]
+    public async Task<IActionResult> UpdateSharedActivity(string token, int id, [FromBody] object body) =>
+        await ForwardPut(_travelClient, $"api/travel-plans/shared/{token}/activities/{id}", body);
+
+    [HttpDelete("shared/{token}/activities/{id}")]
+    public async Task<IActionResult> DeleteSharedActivity(string token, int id) =>
+        await ForwardDelete(_travelClient, $"api/travel-plans/shared/{token}/activities/{id}");
+
+    [HttpPost("shared/{token}/checklist")]
+    public async Task<IActionResult> CreateSharedChecklistItem(string token, [FromBody] object body) =>
+        await ForwardPost(_travelClient, $"api/travel-plans/shared/{token}/checklist", body);
+
+    [HttpPut("shared/{token}/checklist/{id}")]
+    public async Task<IActionResult> UpdateSharedChecklistItem(string token, int id, [FromBody] object body) =>
+        await ForwardPut(_travelClient, $"api/travel-plans/shared/{token}/checklist/{id}", body);
+
+    [HttpDelete("shared/{token}/checklist/{id}")]
+    public async Task<IActionResult> DeleteSharedChecklistItem(string token, int id) =>
+        await ForwardDelete(_travelClient, $"api/travel-plans/shared/{token}/checklist/{id}");
 
     // Troskovi
     [HttpGet("{planId}/expenses")]

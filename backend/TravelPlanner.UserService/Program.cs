@@ -64,7 +64,25 @@ internal sealed class UserService : StatelessService
                     var app = builder.Build();
 
                     using (var scope = app.Services.CreateScope())
-                        scope.ServiceProvider.GetRequiredService<UserDbContext>().Database.Migrate();
+                    {
+                        var db = scope.ServiceProvider.GetRequiredService<UserDbContext>();
+                        db.Database.Migrate();
+
+                        if (!db.Users.Any(u => u.Role == "Admin"))
+                        {
+                            var adminEmail = app.Configuration["AdminSeed:Email"]!;
+                            var adminPassword = app.Configuration["AdminSeed:Password"]!;
+                            db.Users.Add(new TravelPlanner.UserService.Models.User
+                            {
+                                FirstName = "Admin",
+                                LastName = "TravelPlanner",
+                                Email = adminEmail,
+                                PasswordHash = BCrypt.Net.BCrypt.HashPassword(adminPassword),
+                                Role = "Admin"
+                            });
+                            db.SaveChanges();
+                        }
+                    }
 
                     app.UseCors("AllowFrontend");
                     app.UseAuthentication();
