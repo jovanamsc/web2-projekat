@@ -72,7 +72,7 @@ export default function TravelPlanPage() {
       {activeTab === 2 && <ChecklistTab planId={planId} />}
       {activeTab === 3 && <BudgetTab planId={planId} budget={plan.budget} />}
       {activeTab === 4 && <ShareTab planId={planId} />}
-      {activeTab === 5 && <MapTab destinations={plan.destinations} activities={plan.activities} />}
+      {activeTab === 5 && <MapTab planId={planId} />}
 
       {showEdit && (
         <Modal title="Uredi putovanje" onClose={() => setShowEdit(false)}>

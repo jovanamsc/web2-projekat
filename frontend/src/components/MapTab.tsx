@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { Activity, Destination } from '../models/travel.models';
+import travelService from '../services/travel.service';
 import '../pages/TravelPlanPage.css';
 
 // fix za Vite
@@ -15,11 +16,17 @@ L.Icon.Default.mergeOptions({
 interface GeoResult { id: number; lat: number; lon: number; }
 
 interface Props {
-  destinations: Destination[];
-  activities: Activity[];
+  planId: number;
 }
 
-export default function MapTab({ destinations, activities }: Props) {
+export default function MapTab({ planId }: Props) {
+  const [destinations, setDestinations] = useState<Destination[]>([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
+
+  useEffect(() => {
+    travelService.getDestinations(planId).then(setDestinations);
+    travelService.getActivities(planId).then(setActivities);
+  }, [planId]);
   const mapRef = useRef<L.Map | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const markersRef = useRef<L.Marker[]>([]);
