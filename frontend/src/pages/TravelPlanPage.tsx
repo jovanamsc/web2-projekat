@@ -70,7 +70,7 @@ export default function TravelPlanPage() {
       {activeTab === 0 && <DestinationsTab planId={planId} />}
       {activeTab === 1 && <ActivitiesTab planId={planId} startDate={plan.startDate} endDate={plan.endDate} />}
       {activeTab === 2 && <ChecklistTab planId={planId} />}
-      {activeTab === 3 && <BudgetTab planId={planId} budget={plan.budget} activityCostTotal={plan.activities?.reduce((s, a) => s + (a.estimatedCost ?? 0), 0) ?? 0} />}
+      {activeTab === 3 && <BudgetTab planId={planId} budget={plan.budget} />}
       {activeTab === 4 && <ShareTab planId={planId} />}
       {activeTab === 5 && <MapTab destinations={plan.destinations} activities={plan.activities} />}
 

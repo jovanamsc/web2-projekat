@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Modal from './Modal';
 import expenseService from '../services/expense.service';
+import travelService from '../services/travel.service';
 import type { Expense, CreateExpense, ExpenseCategory } from '../models/expense.models';
 import '../pages/TravelPlanPage.css';
 import '../App.css';
@@ -11,15 +12,19 @@ const CAT_LABELS: Record<ExpenseCategory, string> = {
   Tickets: 'Ulaznice', Shopping: 'Kupovina', Other: 'Ostalo'
 };
 
-interface Props { planId: number; budget: number; activityCostTotal?: number; }
+interface Props { planId: number; budget: number; }
 
-export default function BudgetTab({ planId, budget, activityCostTotal = 0 }: Props) {
+export default function BudgetTab({ planId, budget }: Props) {
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [activityCostTotal, setActivityCostTotal] = useState(0);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<Expense | null>(null);
 
   useEffect(() => {
     expenseService.getExpenses(planId).then(setExpenses);
+    travelService.getActivities(planId).then(acts => {
+      setActivityCostTotal(acts.reduce((s, a) => s + (a.estimatedCost ?? 0), 0));
+    });
   }, [planId]);
 
   const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);

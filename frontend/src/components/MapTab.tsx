@@ -41,7 +41,8 @@ export default function MapTab({ destinations, activities }: Props) {
 
   const geocodeQuery = async (query: string, id: number): Promise<GeoResult | null> => {
     try {
-      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
+      const base = import.meta.env.VITE_NOMINATIM_URL as string;
+      const url = `${base}/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
       const res = await fetch(url, { headers: { 'Accept-Language': 'bs,hr,sr,en' } });
       const data = await res.json();
       if (data.length === 0) return null;
