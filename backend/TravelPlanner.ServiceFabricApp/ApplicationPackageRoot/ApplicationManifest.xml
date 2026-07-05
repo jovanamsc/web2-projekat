@@ -4,8 +4,7 @@
                      xmlns="http://schemas.microsoft.com/2011/01/fabric"
                      xmlns:xsd="http://www.w3.org/2001/XMLSchema"
                      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <Parameters>
-  </Parameters>
+  <Parameters />
   <ServiceManifestImport>
     <ServiceManifestRef ServiceManifestName="UserServicePkg" ServiceManifestVersion="1.0.0" />
   </ServiceManifestImport>
@@ -43,7 +42,7 @@
       </StatelessService>
     </Service>
     <Service Name="ShareService" ServicePackageActivationMode="ExclusiveProcess">
-      <StatefulService ServiceTypeName="ShareServiceType" TargetReplicaSetSize="3" MinReplicaSetSize="2">
+      <StatefulService ServiceTypeName="ShareServiceType" TargetReplicaSetSize="1" MinReplicaSetSize="1">
         <SingletonPartition />
       </StatefulService>
     </Service>

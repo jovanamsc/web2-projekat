@@ -7,6 +7,7 @@
     <MinToolsVersion>16.10</MinToolsVersion>
     <SupportedMSBuildNuGetPackageVersion>1.7.9</SupportedMSBuildNuGetPackageVersion>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <UpdateServiceFabricApplicationManifestEnabled>false</UpdateServiceFabricApplicationManifestEnabled>
   </PropertyGroup>
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
@@ -34,6 +35,13 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TravelPlanner.BudgetService\TravelPlanner.BudgetService.csproj" />
+    <ProjectReference Include="..\TravelPlanner.Gateway\TravelPlanner.Gateway.csproj" />
+    <ProjectReference Include="..\TravelPlanner.ShareService\TravelPlanner.ShareService.csproj" />
+    <ProjectReference Include="..\TravelPlanner.TravelService\TravelPlanner.TravelService.csproj" />
+    <ProjectReference Include="..\TravelPlanner.UserService\TravelPlanner.UserService.csproj" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
   <PropertyGroup>

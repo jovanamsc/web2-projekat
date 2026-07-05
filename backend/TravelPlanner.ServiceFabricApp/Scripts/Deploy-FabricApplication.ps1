@@ -279,14 +279,32 @@ if ($IsUpgrade)
 }
 else
 {
-    # Pass the path to the Startup Services File if it was provided
+    # Pass the path to the Startup Services File only if it has actual service definitions.
+    # The SDK's ReadParametersAsHashTable requires XmlLinkedNode and crashes on empty <Parameters />.
     if ($StartupServicesFile)
     {
-        $PublishParameters['StartupServicesFilePath'] = $StartupServicesFile
-
-        if (-not [string]::IsNullOrEmpty($publishProfile.StartupServiceParameterFile))
+        [xml]$startupXml = Get-Content $StartupServicesFile -Encoding UTF8
+        $startupHasServices = $false
+        foreach ($child in $startupXml.DocumentElement.ChildNodes)
         {
-            $PublishParameters['StartupServiceParameterFilePath'] = $publishProfile.StartupServiceParameterFile
+            if ($child -is [System.Xml.XmlElement] -and $child.LocalName -eq 'Services')
+            {
+                foreach ($svc in $child.ChildNodes)
+                {
+                    if ($svc -is [System.Xml.XmlElement]) { $startupHasServices = $true; break }
+                }
+                break
+            }
+        }
+
+        if ($startupHasServices)
+        {
+            $PublishParameters['StartupServicesFilePath'] = $StartupServicesFile
+
+            if (-not [string]::IsNullOrEmpty($publishProfile.StartupServiceParameterFile))
+            {
+                $PublishParameters['StartupServiceParameterFilePath'] = $publishProfile.StartupServiceParameterFile
+            }
         }
     }
 
