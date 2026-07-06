@@ -6,11 +6,12 @@ import travelService from '../services/travel.service';
 import '../pages/TravelPlanPage.css';
 
 // fix za Vite
+const leafletIconsUrl = import.meta.env.VITE_LEAFLET_ICONS_URL as string;
 delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+  iconRetinaUrl: `${leafletIconsUrl}/marker-icon-2x.png`,
+  iconUrl: `${leafletIconsUrl}/marker-icon.png`,
+  shadowUrl: `${leafletIconsUrl}/marker-shadow.png`,
 });
 
 interface GeoResult { id: number; lat: number; lon: number; }
@@ -39,7 +40,7 @@ export default function MapTab({ planId }: Props) {
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
     mapRef.current = L.map(containerRef.current).setView([44.0, 17.5], 5);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    L.tileLayer(import.meta.env.VITE_OSM_TILE_URL as string, {
       attribution: '© OpenStreetMap contributors',
       maxZoom: 18,
     }).addTo(mapRef.current);
