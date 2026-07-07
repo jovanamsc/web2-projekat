@@ -78,7 +78,7 @@ export default function SharedPlanPage() {
         {activeTab === 2 && (
           <SharedChecklistTab plan={plan} setPlan={setPlan} token={token} isEdit={isEdit} />
         )}
-        {activeTab === 3 && <MapTab destinations={plan.destinations} />}
+        {activeTab === 3 && <MapTab destinations={plan.destinations} activities={plan.activities} />}
       </div>
 
       {showQR && (

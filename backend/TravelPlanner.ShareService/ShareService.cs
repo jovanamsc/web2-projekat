@@ -17,11 +17,11 @@ public sealed class ShareService : StatefulService
         new ServiceReplicaListener[]
         {
             new(serviceContext =>
-                new KestrelCommunicationListener(serviceContext, (url, listener) =>
+                new KestrelCommunicationListener(serviceContext, "ServiceEndpoint", (url, listener) =>
                 {
                     var builder = WebApplication.CreateBuilder();
                     builder.WebHost.UseUrls(url);
-                    builder.WebHost.UseServiceFabricIntegration(listener, ServiceFabricIntegrationOptions.UseUniqueServiceUrl);
+                    builder.WebHost.UseServiceFabricIntegration(listener, ServiceFabricIntegrationOptions.None);
 
                     builder.Services.AddControllers();
                     builder.Services.AddSingleton(this);
@@ -30,7 +30,7 @@ public sealed class ShareService : StatefulService
                     app.MapControllers();
 
                     return app;
-                }), "ServiceEndpoint", listenOnSecondary: false)
+                }), listenOnSecondary: false)
         };
 
     public async Task<string> CreateShareTokenAsync(int travelPlanId, string accessType, TimeSpan expiry)

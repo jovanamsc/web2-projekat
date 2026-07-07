@@ -104,6 +104,8 @@ export default function ActivitiesTab({ planId, startDate, endDate }: Props) {
             initial={editing ?? undefined}
             onSubmit={handleSubmit}
             onCancel={() => { setShowForm(false); setEditing(null); }}
+            startDate={startDate}
+            endDate={endDate}
           />
         </Modal>
       )}
@@ -194,10 +196,12 @@ function CalendarMonth({ month, byDate, tripStart, tripEnd }: {
   );
 }
 
-function ActivityForm({ initial, onSubmit, onCancel }: {
+function ActivityForm({ initial, onSubmit, onCancel, startDate, endDate }: {
   initial?: Activity;
   onSubmit: (d: CreateActivity) => Promise<void>;
   onCancel: () => void;
+  startDate: string;
+  endDate: string;
 }) {
   const [title, setTitle] = useState(initial?.title ?? '');
   const [date, setDate] = useState(initial?.date?.slice(0, 10) ?? '');
@@ -213,6 +217,7 @@ function ActivityForm({ initial, onSubmit, onCancel }: {
     e.preventDefault();
     if (!title.trim()) { setError('Naziv je obavezan.'); return; }
     if (!date) { setError('Datum je obavezan.'); return; }
+    if (date < startDate.slice(0, 10) || date > endDate.slice(0, 10)) { setError(`Datum mora biti unutar trajanja putovanja (${startDate.slice(0, 10)} – ${endDate.slice(0, 10)}).`); return; }
     if (estimatedCost !== '' && Number(estimatedCost) < 0) { setError('Trosak ne moze biti negativan.'); return; }
     setLoading(true);
     setError('');
@@ -235,7 +240,7 @@ function ActivityForm({ initial, onSubmit, onCancel }: {
       {error && <div className="alert alert-error">{error}</div>}
       <div className="form-group"><label>Naziv *</label><input value={title} onChange={e => setTitle(e.target.value)} placeholder="npr. Obilazak Eiffelovog tornja" /></div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-        <div className="form-group"><label>Datum *</label><input type="date" value={date} onChange={e => setDate(e.target.value)} /></div>
+        <div className="form-group"><label>Datum *</label><input type="date" value={date} onChange={e => setDate(e.target.value)} min={startDate.slice(0, 10)} max={endDate.slice(0, 10)} /></div>
         <div className="form-group"><label>Vrijeme</label><input type="time" value={time} onChange={e => setTime(e.target.value)} /></div>
       </div>
       <div className="form-group"><label>Lokacija</label><input value={location} onChange={e => setLocation(e.target.value)} placeholder="Adresa ili naziv mjesta" /></div>

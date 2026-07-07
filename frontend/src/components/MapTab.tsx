@@ -17,14 +17,17 @@ L.Icon.Default.mergeOptions({
 interface GeoResult { id: number; lat: number; lon: number; }
 
 interface Props {
-  planId: number;
+  planId?: number;
+  destinations?: Destination[];
+  activities?: Activity[];
 }
 
-export default function MapTab({ planId }: Props) {
-  const [destinations, setDestinations] = useState<Destination[]>([]);
-  const [activities, setActivities] = useState<Activity[]>([]);
+export default function MapTab({ planId, destinations: initDest, activities: initActs }: Props) {
+  const [destinations, setDestinations] = useState<Destination[]>(initDest ?? []);
+  const [activities, setActivities] = useState<Activity[]>(initActs ?? []);
 
   useEffect(() => {
+    if (planId === undefined) return;
     travelService.getDestinations(planId).then(setDestinations);
     travelService.getActivities(planId).then(setActivities);
   }, [planId]);
