@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { jsPDF } from 'jspdf';
 import Layout from '../components/Layout';
 import Modal from '../components/Modal';
 import TravelPlanForm from '../components/TravelPlanForm';
@@ -39,7 +40,78 @@ export default function TravelPlanPage() {
     setShowEdit(false);
   };
 
-  const formatDate = (d: string) => new Date(d).toLocaleDateString('bs-BA');
+  const formatDate = (d: string) => new Date(d).toLocaleDateString('sr-RS');
+
+  const exportPdf = () => {
+    if (!plan) return;
+    const doc = new jsPDF();
+    const fmt = (d: string) => new Date(d).toLocaleDateString('sr-RS');
+    const STATUS: Record<string, string> = { Planned: 'Planirano', Reserved: 'Rezervisano', Completed: 'Zavrseno', Cancelled: 'Otkazano' };
+    let y = 20;
+
+    const line = (text: string, size = 11, bold = false) => {
+      if (y > 270) { doc.addPage(); y = 20; }
+      doc.setFontSize(size);
+      doc.setFont('helvetica', bold ? 'bold' : 'normal');
+      doc.text(text, 15, y);
+      y += size * 0.5 + 3;
+    };
+
+    const sep = () => { if (y > 270) { doc.addPage(); y = 20; } doc.setDrawColor(200); doc.line(15, y, 195, y); y += 5; };
+
+    line(plan.title, 20, true);
+    line(`${fmt(plan.startDate)} - ${fmt(plan.endDate)}`, 11);
+    if (plan.budget > 0) line(`Budzet: ${plan.budget.toLocaleString('sr-RS')} EUR`, 11);
+    if (plan.description) line(plan.description, 10);
+    y += 4;
+
+    if (plan.destinations.length > 0) {
+      sep();
+      line('DESTINACIJE', 13, true);
+      y += 2;
+      plan.destinations.forEach(d => {
+        line(`${d.name} - ${d.location}`, 11, true);
+        line(`  ${fmt(d.arrivalDate)} - ${fmt(d.departureDate)}`, 10);
+        if (d.description) line(`  ${d.description}`, 10);
+        y += 2;
+      });
+    }
+
+    if (plan.activities.length > 0) {
+      sep();
+      line('AKTIVNOSTI', 13, true);
+      y += 2;
+      const grouped = plan.activities
+        .slice().sort((a, b) => a.date.localeCompare(b.date))
+        .reduce<Record<string, typeof plan.activities>>((acc, a) => {
+          const k = a.date.slice(0, 10);
+          if (!acc[k]) acc[k] = [];
+          acc[k].push(a);
+          return acc;
+        }, {});
+      Object.entries(grouped).forEach(([date, acts]) => {
+        line(fmt(date), 11, true);
+        acts.forEach(a => {
+          const time = a.time ? a.time.slice(0, 5) + ' ' : '';
+          line(`  ${time}${a.title} [${STATUS[a.status]}]`, 10);
+          if (a.location) line(`  Lokacija: ${a.location}`, 10);
+          if (a.estimatedCost) line(`  Procijenjeno: ${a.estimatedCost} EUR`, 10);
+        });
+        y += 2;
+      });
+    }
+
+    if (plan.checklistItems.length > 0) {
+      sep();
+      line('CEKLISTA', 13, true);
+      y += 2;
+      plan.checklistItems.forEach(item => {
+        line(`  ${item.isCompleted ? '[x]' : '[ ]'} ${item.title}`, 10);
+      });
+    }
+
+    doc.save(`${plan.title.replace(/\s+/g, '_')}.pdf`);
+  };
 
   if (loading) return <Layout><p className="text-muted">Ucitavanje...</p></Layout>;
   if (!plan) return null;
@@ -55,11 +127,14 @@ export default function TravelPlanPage() {
             <h1>{plan.title}</h1>
             <div className="plan-dates">
               <span className="plan-dates-chip">📅 {formatDate(plan.startDate)} – {formatDate(plan.endDate)}</span>
-              {plan.budget > 0 && <span className="plan-dates-chip">💰 {plan.budget.toLocaleString('bs-BA')} €</span>}
+              {plan.budget > 0 && <span className="plan-dates-chip">💰 {plan.budget.toLocaleString('sr-RS')} €</span>}
             </div>
             {plan.description && <p className="plan-desc">{plan.description}</p>}
           </div>
-          <button className="btn-hero" onClick={() => setShowEdit(true)}>Uredi plan</button>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button className="btn-hero" onClick={exportPdf}>Izvezi PDF</button>
+            <button className="btn-hero" onClick={() => setShowEdit(true)}>Uredi plan</button>
+          </div>
         </div>
       </div>
 
